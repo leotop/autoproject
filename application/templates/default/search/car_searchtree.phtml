@@ -1,0 +1,431 @@
+<?php 
+error_reporting(E_ALL);
+error_reporting(-1);
+ini_set('error_reporting', E_ALL);
+function onlyAutoComplTreeConvert($tree=array()){
+	$newTree = array();
+	if (isset($tree) && count($tree)>0){
+		foreach ($tree as $node){
+			if (in_array($node->DESCENDANTS, array(0)))
+				$newTree [UnicodeViewHelper::mb_ucfirst($node->NAME)]= $node->ID;
+		}
+	}
+	return $newTree;
+}
+function removeElementWithValue($array, $key, $value){
+     foreach($array as $subKey => $subArray){
+          if($subArray[$key] == $value){
+               unset($array[$subKey]);
+          }
+     }
+     return $array;
+}
+function unique_multidim_array($array, $key) {
+														$temp_array = array();
+														$i = 0;
+														$key_array = array();
+													   
+														foreach($array as $val) {
+															if (!in_array($val[$key], $key_array)) {
+																$key_array[$i] = $val[$key];
+																$temp_array[$i] = $val;
+															}
+															$i++;
+														}
+														return $temp_array;
+													} 
+function array_orderby()
+{
+    $args = func_get_args();
+    $data = array_shift($args);
+    foreach ($args as $n => $field) {
+        if (is_string($field)) {
+            $tmp = array();
+            foreach ($data as $key => $row)
+                $tmp[$key] = $row[$field];
+            $args[$n] = $tmp;
+            }
+    }
+    $args[] = &$data;
+    call_user_func_array('array_multisort', $args);
+    return array_pop($args);
+}
+?>
+
+<div class="container">
+	<div itemscope itemtype="http://schema.org/Product">
+		<ul class="breadcrumbs">
+			<li>
+				<span itemscope itemtype="http://data-vocabulary.org/Breadcrumb"><a href="<?=HTTP_ROOT?>/" itemprop="url"><span itemprop="title"><?=$translates['front.home']?></span></a> &rarr;</span> 
+				<span itemscope itemtype="http://data-vocabulary.org/Breadcrumb"><a href="<?=HTTP_ROOT?>/catalog/" itemprop="url"><span itemprop="title"><?=$translates["f.katalog_avtomobiley"];?></span></a> &rarr;</span> 
+				<span itemscope itemtype="http://data-vocabulary.org/Breadcrumb"><a href="<?=HTTP_ROOT?>/auto/<?=AliasViewHelper::doTraslitSearchAuto($MFA['MFA_BRAND'])?>-<?=$MFA['MFA_ID']?>/" itemprop="url"><span itemprop="title"><?=$MFA['MFA_BRAND']?></span></a> &rarr;</span>
+				<span itemscope itemtype="http://data-vocabulary.org/Breadcrumb"><a href="<?=HTTP_ROOT?>/auto/<?=AliasViewHelper::doTraslitSearchAuto($MFA['MFA_BRAND'])?>-<?=$MFA['MFA_ID']?>/<?=AliasViewHelper::doTraslitSearchAuto($MOD[0]->MOD_CDS_TEXT)?>-<?=$MOD[0]->MOD_ID?>/" itemprop="url"><span itemprop="title"><?=$MOD[0]->MOD_CDS_TEXT?></span></a> &rarr;</span> 
+				<span itemscope itemtype="http://data-vocabulary.org/Breadcrumb"><a href="<?=HTTP_ROOT?>/auto/<?=AliasViewHelper::doTraslitSearchAuto($MFA['MFA_BRAND'])?>-<?=$MFA['MFA_ID']?>/<?=AliasViewHelper::doTraslitSearchAuto($MOD[0]->MOD_CDS_TEXT)?>-<?=$MOD[0]->MOD_ID?>/<?=AliasViewHelper::doTraslitSearchAuto($TYP[0]->TYP_CDS_TEXT)?>-<?=$TYP[0]->TYP_ID?>/" itemprop="url"><span itemprop="title"><?=$TYP[0]->TYP_CDS_TEXT?></span></a></span>
+				<?php if (isset($car_breadcrumbs) && count($car_breadcrumbs)>0){?>
+					 &rarr; 
+				<?php $i=0;
+				foreach ($car_breadcrumbs as $kk=>$dd){
+					$i++; ?>
+					<span itemscope itemtype="http://data-vocabulary.org/Breadcrumb"><a href="<?=$_SERVER['REQUEST_URI']?>" itemprop="url"><span itemprop="title"><?=$dd->NAME?><?php if ($i!=count($car_breadcrumbs)){?> &rarr; <?php }?></span></a></span>
+				<?php }?>
+				<?php }?>
+			</li>
+		</ul>
+		<div class="row">
+			<?php if (isset($algoritm)&&$algoritm){?>
+			<aside class="col-md-3 col-sm-4">
+				<? /* ?>
+				<script src="<?=HTTP_ROOT?>/static/js/dtree/dtree.js"></script>
+				<h3><?=$translates['searchcategoryname']?></h3>
+				<div class="theme_box clearfix">
+					<?php if (isset($search_tree)&&count($search_tree)>0){?>
+					<script type="text/javascript">
+						var akey = new Array();
+						<?php $trees = '';?> 
+						<?php $FirstLevelTreeConvert = onlyAutoComplTreeConvert($search_tree);?>
+						<?php $i=0; foreach ($FirstLevelTreeConvert as $nameNode=>$NodeId){ $i++;?>
+							<?php $trees .= '"'.$nameNode.'"'.(($i!=count($FirstLevelTreeConvert))?',':'');?>
+							akey["<?=$nameNode?>"]= <?=$NodeId?>;
+						<?php }?>
+						var atree = [<?=$trees?>];
+						
+						function treeviewer(event, data, formatted) {
+							location = "/auto/<?=AliasViewHelper::doTraslitSearchAuto($MFA['MFA_BRAND'])?>-<?=$MFA['MFA_ID']?>/<?=AliasViewHelper::doTraslitSearchAuto($MOD[0]->MOD_CDS_TEXT)?>-<?=$MOD[0]->MOD_ID?>/<?=AliasViewHelper::doTraslitSearchAuto($TYP[0]->TYP_CDS_TEXT)?>-<?=$TYP[0]->TYP_ID?>/"+akey[formatted];
+						}
+					</script>
+					<form autocomplete="off">
+						<input type="text" id="auto-searcher" class="autoinput"/>
+					</form>
+					<?php }
+					$express_navigation = array();
+					if (isset($search_tree) && count($search_tree)>0){?>
+					<script type="text/javascript">
+					cat_tree = new dTree('cat_tree');
+					cat_tree.add(10001,-1,"<a class='h1 top-10' href='<?=HTTP_ROOT?>/auto/<?=AliasViewHelper::doTraslit($MFA['MFA_BRAND'])?>-<?=$MFA['MFA_ID']?>/<?=AliasViewHelper::doTraslit($MOD[0]->MOD_CDS_TEXT)?>-<?=$MOD[0]->MOD_ID?>/<?=AliasViewHelper::doTraslit($TYP[0]->TYP_CDS_TEXT)?>-<?=$TYP[0]->TYP_ID?>/'><?=$translates['front.catalog.title']?></a>");
+					<?php $i=0; foreach ($search_tree as $dd){ $i++;
+							$dName = FunctionsViewHelper::mb_ucfirst($dd->NAME);
+							$set_express = false;
+							switch ($dd->ID){
+								case 10697: $set_express = true; $dName = $translates['front.zap.to']; break; //Запчасти для ТО
+								case 10359: $set_express = true; break; //Масляный фильтр
+								case 10360: $set_express = true; break; //Воздушный фильтр
+								case 10363: $set_express = true; break; // Салонный фильтр
+								case 10130: $set_express = true; break; //Тормозные колодки
+								case 10132: $set_express = true; break; //Тормозные диски
+								case 10221: $set_express = true; break; //Амортизаторы
+								case 10472: $set_express = true; $dName = $translates['f.pylniki_i_otboyniki']; break; //Пыльники и отбойники
+								case 10690: $set_express = true; break; //Стойка стабилизатора
+								case 10504: $set_express = true; break; //Ремень ГРМ
+								case 10203: $set_express = true; $dName = $translates['f.radiatory_ohlazhdeniya']; break; //Радиаторы охлаждения
+								case 10151: $set_express = true; break; //Комплекты сцепления
+								case 10671: $set_express = true; break; //рычаг
+							}
+							if ($set_express){
+								$express_navigation [$dName]= "/auto/".AliasViewHelper::doTraslit($MFA['MFA_BRAND'])."-".$MFA['MFA_ID']."/".AliasViewHelper::doTraslit($MOD[0]->MOD_CDS_TEXT)."-".$MOD[0]->MOD_ID."/".AliasViewHelper::doTraslit($TYP[0]->TYP_CDS_TEXT)."-".$TYP[0]->TYP_ID."/".$dd->ID."/?node=".$i."";
+							} 
+						?>
+						<?php if ($dd->PARENT == 0){?>
+							cat_tree.add(<?=$dd->ID?>,<?=$dd->PARENT?>,"<?=$dName?>",'#');
+						<?php }else{?>
+							cat_tree.add(<?=$dd->ID?>,<?=$dd->PARENT?>,"<?=$dName?>","/auto/<?=AliasViewHelper::doTraslit($MFA['MFA_BRAND'])?>-<?=$MFA['MFA_ID']?>/<?=AliasViewHelper::doTraslit($MOD[0]->MOD_CDS_TEXT)?>-<?=$MOD[0]->MOD_ID?>/<?=AliasViewHelper::doTraslit($TYP[0]->TYP_CDS_TEXT)?>-<?=$TYP[0]->TYP_ID?>/<?=$dd->ID?>/?node=<?=$i?>");
+						<?php }?>
+					<?php }?>
+					document.write(cat_tree);
+					cat_tree.openTo(<?=(isset($_REQUEST['node']))?$_REQUEST['node']:0?>, true);
+					function exp2(id,id2,id3,id4) {
+						if (id) {
+							cat_tree.openTo(id,true); 
+						}
+						else {
+							alert('<?=$translates['front.noparts.catalog']?>');
+						}
+						if (id2) cat_tree.openTo(id2,true);
+						if (id3) cat_tree.openTo(id3,true);
+						if (id4) cat_tree.openTo(id4,true);
+					}
+					</script>
+					<?php }?>
+				</div>
+				<? */ ?>
+				<div class="col-md-12 col-sm-12 stickybanner"  style="margin-top:10px;">
+					<img src="http://autoresurs.de/static/images/banners/banner3.jpg"  >
+					<br/>
+					<br/>
+					<a style="margin-left:20px;width:195px;" class="button_red middle_btn align_center" title="ZUM KATALOG" href="<?=HTTP_ROOT?>/auto/<?=AliasViewHelper::doTraslit($MFA['MFA_BRAND'])?>-<?=$MFA['MFA_ID']?>/<?=AliasViewHelper::doTraslit($MOD[0]->MOD_CDS_TEXT)?>-<?=$MOD[0]->MOD_ID?>/<?=AliasViewHelper::doTraslit($TYP[0]->TYP_CDS_TEXT)?>-<?=$TYP[0]->TYP_ID?>/">< ZUM KATALOG<a>
+				</div>
+			</aside>
+			<main class="col-md-9 col-sm-8">
+				<h1><span itemprop="name"><?=(isset($catName)&&$catName)?$catName.' '.$translates['f.dlya'].' ':''?> <?=$MFA['MFA_BRAND']?> <?=$MOD[0]->MOD_CDS_TEXT?> <?=$TYP[0]->TYP_CDS_TEXT?></span></h1>
+				<div class="theme_box clearfix">
+					<div itemprop="description">
+						<section class="section_offset">
+							<div class="row">
+								<div class="col-sm-6">
+									<div class="table_wrap">
+										<table>
+											<tbody>
+												<tr>
+													<th><?=$translates['front.car.start']?></th>
+													<td><?=substr($TYP[0]->TYP_PCON_START,0,4)?>.<?=substr($TYP[0]->TYP_PCON_START,4,6)?><?php if ($TYP[0]->TYP_PCON_END){?>-<?=substr($TYP[0]->TYP_PCON_END,0,4)?>.<?=substr($TYP[0]->TYP_PCON_END,4,6)?><?}?></td>
+												</tr>
+												<tr>
+													<th><?=$translates['front.car.engine.horse']?></th>
+													<td><?=$TYP[0]->TYP_KW_FROM?><?=($TYP[0]->TYP_KW_UPTO)?'-'.$TYP[0]->TYP_KW_UPTO:''?></td>
+												</tr>
+												<tr>
+													<th><?=$translates['front.car.engine.cube']?></th>
+													<td><?=$TYP[0]->TYP_CCM?></td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+								<div class="col-sm-6">
+									<div class="table_wrap">
+										<table>
+											<tbody>
+												<tr>
+													<th><?=$translates['front.car.engine.horse2']?></th>
+													<td><?=$TYP[0]->TYP_HP_FROM?><?=($TYP[0]->TYP_HP_UPTO)?'-'.$TYP[0]->TYP_HP_UPTO:''?></td>
+												</tr>
+												<tr>
+													<th><?=$translates['front.car.engine.code']?></th>
+													<td><?=$TYP[0]->ENG_CODE?> <?=$TYP[0]->TYP_ENGINE_DES_TEXT?></td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</section>
+						<section class="section_offset">
+
+								
+								<header class="top_box on_the_sides">
+									<div class="left_side clearfix v_centered">
+										<div class="v_centered">
+											<h3><?=(isset($catName)&&$catName)?$catName:$translates['front.found'].': '.count($data_without_cost)?></h3>
+										</div>
+									</div>
+									<div class="right_side">
+										<!--<div class="layout_type buttons_row" data-table-container="#products_container">
+											<a href="#" data-table-layout="grid_view" class="button_grey middle_btn icon_btn tooltip_container"><i class="icon-th"></i><span class="tooltip top">Grid View</span></a>
+											<a href="#" data-table-layout="list_view list_view_products" class="button_grey middle_btn icon_btn active tooltip_container"><i class="icon-th-list"></i><span class="tooltip top">List View</span></a>
+										</div>-->
+									</div>
+								</header>
+								<div class="table_layout list_view list_view_products" id="products_container">
+									<div class="table_row">
+									<?php 
+									$i=0; 
+									if (count($data_without_cost) > 0) {
+									foreach ($data_without_cost as $fetchData)
+									{ 
+										include("product.phtml");	
+										$i++;
+									}
+									} else {
+										?>
+										<div class="table_cell">
+											<div class="product_item">
+												<div class="full_description">
+													<h1 class="align_center"><?=$translates["f.netu_produktov"];?>!</h1>
+												</div>
+												<div class="description">
+													<h1 class="align_center"><?=$translates["f.netu_produktov"];?>!</h1>
+												</div>
+												
+											</div>
+										</div>
+										<?php
+									}
+									?>
+									</div>
+								</div>
+						</section>
+					</div>
+				</div>
+			</main>
+			<?php  } else { $carname = $MFA['MFA_BRAND']." ". $MOD[0]->MOD_CDS_TEXT." ". $TYP[0]->TYP_CDS_TEXT; ?>
+			<main class="col-md-12 col-sm-12">
+					
+					<script type="text/javascript">
+						var akey = new Array();
+						<?php $trees = '';?> 
+						<?php $FirstLevelTreeConvert = onlyAutoComplTreeConvert($search_tree);?>
+						<?php $i=0; foreach ($FirstLevelTreeConvert as $nameNode=>$NodeId){ $i++;?>
+							<?php $trees .= '"'.$nameNode.'"'.(($i!=count($FirstLevelTreeConvert))?',':'');?>
+							akey["<?=$nameNode?>"]= <?=$NodeId?>;
+						<?php }?>
+						var atree = [<?=$trees?>];
+						
+						function treeviewer(event, data, formatted) {
+							location = "/auto/<?=AliasViewHelper::doTraslitSearchAuto($MFA['MFA_BRAND'])?>-<?=$MFA['MFA_ID']?>/<?=AliasViewHelper::doTraslitSearchAuto($MOD[0]->MOD_CDS_TEXT)?>-<?=$MOD[0]->MOD_ID?>/<?=AliasViewHelper::doTraslitSearchAuto($TYP[0]->TYP_CDS_TEXT)?>-<?=$TYP[0]->TYP_ID?>/"+akey[formatted];
+						}
+					</script>
+					<div class="col-sm-12">
+						<div class="col-sm-5"><h1><?=$carname?></h1></div>
+						<div class="col-sm-2"><h5 style="text-align:right;"><?=$translates['searchcategoryname']?>:</h5></div>
+						<div class="col-sm-5">
+							<form autocomplete="off">
+								<input type="text" id="auto-searcher" class="autoinput"/>
+							</form>
+						</div>
+					</div>
+					<br />
+					<br />
+					<?php $img_path = HTTP_ROOT.'/media-templates/img/auto/';
+							$td_url = '/auto/'.AliasViewHelper::doTraslitSearchAuto($MFA['MFA_BRAND']).'-'.$MFA['MFA_ID'].'/'.AliasViewHelper::doTraslitSearchAuto($MOD[0]->MOD_CDS_TEXT).'-'.$MOD[0]->MOD_ID.'/'.AliasViewHelper::doTraslitSearchAuto($TYP[0]->TYP_CDS_TEXT).'-'.$TYP[0]->TYP_ID;
+							if (isset($search_tree) OR !empty($search_tree)) {
+								
+								if (isset($search_tree) && count($search_tree)>0)
+								{
+									$i=0; 
+									$p=0; 
+									foreach ($search_tree as $dd)
+									{ 
+										$i++; 
+										$dName = FunctionsViewHelper::mb_ucfirst($dd->NAME);
+										if ($dd->PARENT == 10001 && ($dd->ID!="10119" && $dd->ID!="10442"))
+										{
+											$p++; 
+											?>
+											<div class="theme_box addpad">
+												<div class="row">
+													<div class="col-sm-3 rightborder">
+														<ul>
+
+															<li><h4><?=$dName?></h4></li>
+															<li><small><?=strtolower($translates['f.dlya'])?> <?=$carname?></small></li>
+															<li><img height="100" src="<?=HTTP_ROOT?>/static/images/cats/<?=$dd->ID?>.jpg" alt="<?=$dName?> <?=strtolower($translates['f.dlya'])?> <?=$carname?>" class="align_center"></li>
+
+														</ul>
+													</div>
+													<div class="col-sm-9 ">
+													<?
+													$arr = array();
+													$a = 0;
+													foreach ($search_tree as $dds)
+													{ 
+														$i++; 
+														$dName = FunctionsViewHelper::mb_ucfirst($dds->NAME);
+														if ($dds->PARENT == $dd->ID && $dds->DESCENDANTS==0)
+														{
+															$arr[$a]["id"] = $dds->ID;
+															$arr[$a]["name"] = $dName;													
+														}
+														$a++;
+													} 
+													foreach ($search_tree as $ddc)
+													{ 
+														$dName = FunctionsViewHelper::mb_ucfirst($ddc->NAME);
+														$dCat = $ddc->PARENT;
+														if ($ddc->PARENT == $dd->ID && $ddc->DESCENDANTS==1)
+														{
+															
+															foreach ($search_tree as $dds)
+															{ 
+																
+																$dName = FunctionsViewHelper::mb_ucfirst($dds->NAME);
+																if ($dds->PARENT == $ddc->ID && $dds->DESCENDANTS==0)
+																{
+																	$arr[$a]["id"] = $dds->ID;
+																	$arr[$a]["name"] = $dName;													
+																}
+																$a++;
+															} 														
+														}
+														
+													}
+													foreach ($search_tree as $ddc)
+													{ 
+														$dName = FunctionsViewHelper::mb_ucfirst($ddc->NAME);
+														$dCat = $ddc->PARENT;
+														if ($ddc->PARENT == $dd->ID && $ddc->DESCENDANTS==1)
+														{
+															
+															foreach ($search_tree as $dds)
+															{ 
+																
+																$dName = FunctionsViewHelper::mb_ucfirst($dds->NAME);
+																if ($dds->PARENT == $ddc->ID && $dds->DESCENDANTS==1)
+																{
+																	foreach ($search_tree as $dda)
+																	{ 
+																		
+																		$dName = FunctionsViewHelper::mb_ucfirst($dda->NAME);
+																		if ($dda->PARENT == $dds->ID && $dda->DESCENDANTS==0)
+																		{
+																			$arr[$a]["id"] = $dda->ID;
+																			$arr[$a]["name"] = $dName;													
+																		}
+																		$a++;
+																	}													
+																}
+																$a++;
+															} 														
+														}
+														
+													}
+													
+													
+													
+													$arr = array_orderby($arr, 'name', SORT_ASC, 'id', SORT_ASC);
+													$arr = unique_multidim_array($arr, 'name');
+													$arr = removeElementWithValue($arr, "id", "11937"); //Artikelsuche uber Grafik
+													$arr = removeElementWithValue($arr, "id", "12873"); //Artikelsuche uber Grafik
+													$arr = removeElementWithValue($arr, "id", "13609"); //Artikelsuche uber Grafik
+													$arr = removeElementWithValue($arr, "id", "12871"); //Artikelsuche uber Grafik
+													$nrarr = count($arr) / 4;
+													$nrarr = round($nrarr); 
+													
+													
+
+													// $arr = array();
+
+													// foreach($arr as $key => $item)
+													// {
+													   // $arr[$item['name']][$key] = $item;
+													// }
+
+													// ksort($arr, SORT_REGULAR);
+													// ksort($arr, SORT_REGULAR);
+
+
+														// echo $nrarr;
+														/*?>
+														<div class="col-sm-3 "><ul class="list_type_1">
+														<?
+														$ir = 1;*/
+														foreach ($arr as $ii => $va) {
+															?>
+																<div class="col-sm-3 "><ul class="list_type_1"> <li><a href="<?=$td_url.'/'.$va["id"].'/'?>"><?=$va["name"]?></a></li></ul></div>
+															<?
+															/*	if ($nrarr > 1) {
+																	if ($ir % $nrarr == 0){
+																		?> </ul></div><div class="col-sm-3 "><ul class="list_type_1"> <?php
+																	}
+																}
+															$ir++;*/
+															
+														}
+														 
+														?>
+														<!--</ul></div>-->
+													</div>
+												</div>
+											</div>
+											<?
+								
+										}
+									}
+								} 
+								} else { ?>
+									<h1 class="align_center"><?=$translates["f.netu_produktov"];?>!</h1>
+								<?php }?>
+				
+			</main>
+							<?php }?>
+		</div>
+    </div>
+</div>

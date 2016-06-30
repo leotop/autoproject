@@ -1,0 +1,10 @@
+#loader {
+	background: #e0e0e0;
+    width: 150px;
+    padding: 10px;
+    position: fixed;
+    top: 45%;
+    left: 45%;
+    z-index: 999;
+	display: none;
+} 
