@@ -1,5 +1,5 @@
 <?php
-/*
+/* php
 $realm = 'forbidden';
 
 $users = array('admin' => 'mypass', 'guest' => 'guest', 'test' => 'test');
